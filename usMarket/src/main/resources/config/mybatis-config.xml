@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<typeAliases>
+		<typeAlias type="com.spring.usMarket.domain.product.ProductCategoryDto"
+		 alias="productCategoryDto"/>
+		 
+		<typeAlias type="com.spring.usMarket.domain.product.ProductFileDto"
+		 alias="productFileDto"/>
+		 
+		<typeAlias type="com.spring.usMarket.domain.product.ProductInsertDto"
+		 alias="productInsertDto"/>
+		 
+		<typeAlias type="com.spring.usMarket.domain.product.ProductDto"
+		 alias="productDto"/>
+		 
+		<typeAlias type="com.spring.usMarket.domain.deal.DealInsertDto"
+		 alias="dealInsertDto"/>
+		 
+		<typeAlias type="com.spring.usMarket.utils.SearchCondition"
+		 alias="searchCondition"/>
+		 
+		<typeAlias type="com.spring.usMarket.domain.chat.ChatRoomDto"
+		 alias="chatRoomDto"/>
+		 
+		<typeAlias type="com.spring.usMarket.domain.chat.ChatDto"
+		 alias="chatDto"/>
+		 	
+		<typeAlias type="com.spring.usMarket.domain.member.MemberDto"
+		 alias="memberDto"/>
+		 
+		<typeAlias type="com.spring.usMarket.domain.report.ReportInsertDto"
+		 alias="reportInsertDto"/>
+		 
+		<typeAlias type="com.spring.usMarket.domain.admin.AdminDto"
+		 alias="adminDto"/>
+		 
+		<typeAlias type="com.spring.usMarket.utils.AdminSearchCondition"
+		 alias="adminSearchCondition"/>
+		 
+		<typeAlias type="com.spring.usMarket.utils.QnaSearchCondition"
+		 alias="qnaSearchCondition"/>
+		 
+		<typeAlias type="com.spring.usMarket.utils.NoticeSearchCondition"
+		 alias="noticeSearchCondition"/>
+		 
+		<typeAlias type="com.spring.usMarket.domain.admin.ReportHistoryDto"
+		 alias="reportHistoryDto"/>
+		 
+		<typeAlias type="com.spring.usMarket.domain.admin.QnaReplyInsertDto"
+		 alias="qnaReplyInsertDto"/>
+		 
+		<typeAlias type="com.spring.usMarket.domain.qna.QnaInsertDto"
+		 alias="qnaInsertDto"/>
+		 
+		 <typeAlias type="com.spring.usMarket.domain.admin.AdminNoticeInsertDto"
+		  alias="adminNoticeInsertDto"/>
+		  
+		 <typeAlias type="com.spring.usMarket.utils.ProfileSearchCondition"
+		 alias="profileSearchCondition"/>
+	</typeAliases>
+	
+</configuration>

@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mybatis.mapper.admin">
+
+	<sql id="searchCondition">
+		<choose>
+			<when test="condition == 1">
+				AND member_state_no = 1
+			</when>
+			<when test="condition == 2">
+				AND member_state_no = 2
+			</when>
+			<when test="condition == 3">
+				AND member_state_no = 3
+			</when>
+		</choose>
+	</sql>
+	
+	<sql id="searchOrder">
+		<choose>
+			<when test="order == 'regdate'">
+				ORDER BY m.member_regdate
+			</when>
+			<when test="order == 'product'">
+				ORDER BY product_count
+			</when>
+			<when test="order == 'product_desc'">
+				ORDER BY product_count DESC
+			</when>
+			<otherwise>
+				ORDER BY m.member_regdate DESC
+			</otherwise>
+		</choose>
+	</sql>
+
+	<select id="searchAdmin" parameterType="map" resultType="map">
+		SELECT admin_no, admin_id, admin_name FROM admin 
+		WHERE admin_id = #{admin_id} AND admin_password = #{admin_password}
+	</select>
+	
+	<select id="searchMemberStatsByDate" parameterType="adminSearchCondition" resultType="map">
+		SELECT *
+		FROM member_stats_date
+		WHERE TO_DATE("DATE", 'YYYY-MM-DD') BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
+	</select>
+	
+	<select id="searchMemberStatsByMonth" parameterType="adminSearchCondition" resultType="map">
+		SELECT *
+		FROM member_stats_month
+		WHERE TO_DATE("DATE", 'YYYY-MM') BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')
+	</select>
+
+	<select id="searchMemberList" parameterType="adminSearchCondition" resultType="map">
+		SELECT *
+		FROM ( SELECT rownum AS num, A.*
+			   FROM ( SELECT m.member_no
+						, m.member_name
+						, m.member_nickname
+						, m.member_id
+						, m.member_regdate
+						, m.member_state_no
+						, ms.member_state_name 
+						, ( SELECT COUNT(*) 
+							FROM product p 
+							WHERE p.seller_no = m.member_no
+					  	  ) AS product_count
+			   		  FROM MEMBER m, member_state ms
+			   		  WHERE m.member_state_no = ms.member_state_no
+					  <choose>
+					  	<when test="condition == 1">
+							AND m.member_state_no = 1 
+						</when>
+						<when test="condition == 2">
+							AND m.member_state_no = 2 
+						</when>
+						<when test="condition == 3">
+							AND m.member_state_no = 3 
+						</when>
+					  </choose>
+					  AND m.member_regdate BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')+1
+					  <include refid="searchOrder" />
+			 		) A
+			 )
+		WHERE num BETWEEN #{startPage} AND #{endPage}
+	</select>
+	
+	<select id="searchMemberCnt" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM MEMBER
+		WHERE member_regdate BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')+1
+		<include refid="searchCondition" /> 
+	</select>
+	
+	<select id="searchMemberInfo" parameterType="string" resultType="map">
+		SELECT m.member_no
+			 , m.member_name
+			 , m.member_nickname
+			 , m.member_id
+			 , m.member_image
+			 , m.member_email
+			 , m.member_regdate
+			 , m.member_zipcode
+			 , m.member_address
+			 , m.member_address_detail
+			 , m.member_state_no
+			 , ms.member_state_name
+		FROM member m, member_state ms
+		WHERE m.member_state_no = ms.member_state_no 
+		AND member_no = #{member_no}
+	</select>
+ 
+ 	<select id="searchMemberProductList" parameterType="adminSearchCondition" resultType="map">
+		SELECT * 
+		FROM ( SELECT rownum AS num, A.*
+			   FROM ( SELECT*
+					  FROM product_view
+					  WHERE seller_no = #{member_no}
+					  AND product_state_no != 4 
+					  <choose>
+					  	<when test="condition == 1">
+							AND product_state_no = 1 
+						</when>
+						<when test="condition == 2">
+							AND product_state_no = 2  
+						</when>
+						<when test="condition == 3">
+							AND product_state_no = 3  
+						</when>
+					  </choose> 
+					  <choose>
+					  	<when test="order == 'regdate_desc'">
+							ORDER BY product_regdate DESC 
+						</when>
+						<when test="order == 'regdate'">
+							ORDER BY product_regdate  
+						</when>
+						<when test="order == 'view_desc'">
+							ORDER BY product_view DESC 
+						</when>
+						<when test="order == 'view'">
+							ORDER BY product_view 
+						</when>
+						<otherwise>
+							ORDER BY product_regdate DESC 
+						</otherwise>
+					  </choose>
+					) A
+			 )
+		WHERE num BETWEEN #{startPage} AND #{endPage}
+	</select>
+		
+	<select id="searchMemberProductCnt" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM product_view
+		WHERE seller_no = #{member_no}
+		AND product_state_no != 4 
+		<choose>
+			<when test="condition == 1">
+				AND product_state_no = 1 
+			</when>
+			<when test="condition == 2">
+				AND product_state_no = 2  
+			</when>
+			<when test="condition == 3">
+				AND product_state_no = 3  
+			</when>
+		</choose> 
+	</select>
+		
+	<select id="searchDealStatsByDate" parameterType="adminSearchCondition" resultType="map">
+		SELECT *
+		FROM deal_stats_date
+		WHERE TO_DATE(day, 'YYYY-MM-DD') BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')+1
+	</select>
+	
+	<select id="searchDealStatsByMonth" parameterType="adminSearchCondition" resultType="map">
+		SELECT *
+		FROM deal_stats_month
+		WHERE TO_DATE(day, 'YYYY-MM') BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')+1
+	</select>
+	
+	<select id="searchDealList" parameterType="adminSearchCondition" resultType="map">
+		SELECT*
+		FROM ( SELECT rownum AS num, A.*
+			   FROM ( SELECT p.product_price, d.*
+					  FROM deal d, product p
+					  WHERE d.product_no = p.product_no
+					  AND d.deal_start_date BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')+1
+					  <choose>
+					  	<when test="condition != null and condition != ''">
+							AND d.deal_state = #{condition} 
+						</when>
+					  	<otherwise>
+					  		AND d.deal_state IN (0, 1, 2, 3)
+					  	</otherwise>
+					  </choose>
+					  <choose>
+					  	<when test="order == 'regdate'">
+							ORDER BY d.deal_start_date 
+						</when>
+					  	<when test="order == 'price_desc'">
+							ORDER BY p.product_price DESC 
+						</when>
+					  	<when test="order == 'price'">
+							ORDER BY p.product_price 
+						</when>
+						<otherwise>
+							ORDER BY d.deal_start_date DESC 
+						</otherwise>
+					  </choose>
+					) A
+			 )
+		WHERE num BETWEEN #{startPage} AND #{endPage}
+	</select>
+	
+	<select id="searchDealCnt" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM deal
+		WHERE deal_start_date BETWEEN TO_DATE(#{startDate}, 'YYYY-MM-DD') AND TO_DATE(#{endDate}, 'YYYY-MM-DD')+1
+		<choose>
+			<when test="condition == 0">
+				AND deal_state = 0 
+			</when>
+			<when test="condition == 1">
+				AND deal_state = 1 
+			</when>
+			<when test="condition == 2">
+				AND deal_state = 2 
+			</when>
+			<when test="condition == 3">
+				AND deal_state = 3 
+			</when>
+		</choose>
+	</select>
+	
+	<select id="searchDealInfo" resultType="map" parameterType="string">
+		SELECT (SELECT member_name FROM MEMBER m WHERE m.member_no = d.seller_no) AS seller_name
+				, p.product_name
+				, p.product_price
+				, d.*
+		FROM deal d, product p
+		WHERE d.product_no = p.product_no
+		AND d.deal_no = #{deal_no}
+	</select>
+	
+	<select id="searchReviewInfo" resultType="map" parameterType="string">
+		SELECT d.customer_no
+			   , m.member_nickname
+			   , m.member_image
+			   , r.*
+		FROM review r, deal d, member m
+		WHERE r.deal_no = d.deal_no
+		AND d.customer_no = m.member_no
+		AND d.deal_no = #{deal_no}
+	</select>
+	
+	<select id="searchReportList" parameterType="adminSearchCondition" resultType="map">
+		SELECT *
+		FROM ( SELECT rownum AS num, A.*
+				FROM (	SELECT r.report_no
+							   , r.report_regdate
+							   , r.report_complete
+							   , r.report_category1_no
+							   , c1.report_category1_name
+							   , r.report_category2_no
+							   , ( SELECT c2.REPORT_CATEGORY2_NAME
+								   FROM report_category2 c2
+								   WHERE c2.report_category1_no = r.report_category1_no
+								   AND c2.report_category2_no = r.report_category2_no
+								 ) AS report_category2_name
+						FROM report r, report_category1 c1
+						WHERE r.report_category1_no = c1.report_category1_no
+						<if test="condition != null and condition != '' and condition != 0">
+							AND r.report_category1_no = #{condition} 
+						</if>
+						<if test="complete != null and complete != ''">
+							AND r.report_complete = #{complete} 
+						</if>
+						<choose>
+							<when test="order == 'regdate'">
+								ORDER BY r.report_regdate 
+							</when>
+							<otherwise>
+								ORDER BY r.report_regdate DESC 
+							</otherwise>
+						</choose>
+					 ) A
+			 )
+		WHERE num BETWEEN #{startPage} AND #{endPage}
+	</select>
+	
+	<select id="searchReportCnt" resultType="int" parameterType="map">
+		SELECT COUNT(*)
+		FROM report 
+		<choose>
+			<when test="condition != null and condition != ''">
+				WHERE report_category1_no = #{condition} 
+			</when>
+			<otherwise>
+				WHERE report_category1_no IN (1, 2, 3, 4, 5) 
+			</otherwise>
+		</choose>
+		<if test="complete != null and complete != ''">
+			AND report_complete = #{complete} 
+		</if>
+	</select>
+	
+	<select id="searchReportInfo" resultType="map" parameterType="string">
+		SELECT *
+		FROM report_view
+		WHERE report_no = #{report_no}
+	</select>
+	
+	<select id="searchChatLog" resultType="map" parameterType="string">
+		SELECT c.*
+			   , ( SELECT m1.member_id
+				   FROM member m1
+				   WHERE c.chat_from = m1.member_no
+				 ) AS chat_from_id
+			   , ( SELECT m2.member_id
+			   	   FROM member m2
+			   	   WHERE c.chat_to = m2.member_no
+			   	 ) AS chat_to_id
+		FROM chat c
+		WHERE c.room_no = #{room_no}
+		ORDER BY c.chat_time
+	</select>
+	
+	<select id="searchReportEndDate" parameterType="string" resultType="string">
+		SELECT TO_CHAR(sanction_enddate, 'YYYY-MM-DD') AS enddate
+		FROM report_history
+		WHERE member_no = #{member_no}
+		AND rownum = 1
+		AND sanction_enddate > CURRENT_DATE
+		ORDER BY sanction_enddate DESC
+	</select>
+	
+	<insert id="insertReportHistory" parameterType="reportHistoryDto">
+		INSERT INTO report_history (report_no, admin_no, member_no, sanction_category_no, sanction_startdate, sanction_enddate)
+		values(#{report_no}, #{admin_no}, #{member_no}, #{sanction_category_no}, #{sanction_startdate}, #{sanction_enddate})
+	</insert>
+	
+	<update id="updateReport" parameterType="string">
+		UPDATE report
+		SET report_complete = 'Y'
+		WHERE report_no = #{report_no}
+	</update>
+	
+	<select id="searchReportHistory" parameterType="string" resultType="map">
+		SELECT a.admin_id
+			   , a.admin_name
+			   , r.sanction_startdate
+			   , r.sanction_enddate
+			   , r.sanction_regdate
+			   , ( SELECT c.sanction_category_name
+				   FROM sanction_category c
+				   WHERE r.sanction_category_no = c.sanction_category_no
+				 ) AS sanction_category_name
+		FROM report_history r, admin a
+		WHERE r.admin_no = a.admin_no
+		AND r.report_no = #{report_no}
+	</select>
+	
+	<select id="searchQnaList" parameterType="adminSearchCondition" resultType="map">
+		SELECT *
+		FROM ( SELECT rownum AS num, A.*
+				FROM (	SELECT q.qna_no
+	   				 		   , q.qna_category1_no
+	   				 		   , c.qna_category1_name
+	   				 		   , q.qna_regdate
+	   				 		   , q.qna_complete
+	   				 		   , q.qna_title
+			  			FROM qna q, qna_category1 c
+			  			WHERE q.qna_category1_no = c.qna_category1_no 
+			  			<if test="complete != null and complete != ''">
+							AND q.qna_complete = #{complete}  
+						</if>
+						<choose>
+							<when test="order == 'regdate'">
+								ORDER BY q.qna_regdate 
+							</when>
+							<otherwise>
+								ORDER BY q.qna_regdate DESC 
+							</otherwise>
+						</choose>
+					 ) A
+			 )
+		WHERE num BETWEEN #{startPage} AND #{endPage}
+	</select>
+	
+	<select id="searchQnaCnt" parameterType="string" resultType="int">
+		SELECT COUNT(*)  
+		FROM qna 
+		<if test="complete != null and complete != ''">
+			WHERE qna_complete = #{complete}  
+		</if>
+	</select>
+	
+	<select id="searchQnaInfo" parameterType="string" resultType="map">
+		SELECT *
+		FROM qna_view
+		WHERE qna_no = #{qna_no}
+	</select>
+	
+	<insert id="insertQnaReply" parameterType="qnaReplyInsertDto">
+		INSERT INTO qna_reply(qna_no, admin_no, qna_reply_content)
+		values(#{qna_no}, #{admin_no}, #{qna_reply_content})
+	</insert>
+	
+	<update id="updateQna" parameterType="string">
+		UPDATE qna
+		SET qna_complete = 'Y'
+		WHERE qna_no = #{qna_no}
+	</update>
+	
+	<select id="searchQnaReply" parameterType="string" resultType="map">
+		SELECT a.admin_id
+			  , a.admin_name
+			  , q.qna_reply_content
+			  , q.qna_reply_regdate
+		FROM qna_reply q, admin a
+		WHERE q.admin_no = a.admin_no
+		AND q.qna_no = #{qna_no}
+	</select>
+	
+	<select id="searchNoticeList" parameterType="adminSearchCondition" resultType="map">
+		SELECT *
+		FROM ( SELECT rownum AS num, A.*
+			   FROM ( SELECT notice_no
+							 , notice_title
+							 , notice_view
+							 , notice_regdate
+							 , notice_status
+					   FROM notice 
+					   <choose>
+						  	<when test="condition != null and condition != ''">
+						   		WHERE notice_status = #{condition} 
+						   	</when>
+						  	<otherwise>
+								WHERE notice_status IN (0, 1) 
+							</otherwise>
+					   </choose>
+					   <choose>
+							<when test="order == 'regdate_desc'">
+								ORDER BY notice_regdate DESC 
+							</when>
+							<when test="order == 'regdate'">
+								ORDER BY notice_regdate 
+							</when>
+							<when test="order == 'view_desc'">
+								ORDER BY notice_view DESC, notice_regdate DESC 
+							</when>
+							<when test="order == 'view'">
+								ORDER BY notice_view, notice_regdate DESC 
+							</when>
+							<otherwise>
+								ORDER BY notice_regdate DESC 
+							</otherwise>
+					   </choose>
+					 ) A
+			 )
+		WHERE num BETWEEN #{startPage} AND #{endPage}
+	</select>
+	
+	<select id="searchNoticeCnt" parameterType="string" resultType="int">
+		SELECT COUNT(*)
+		FROM notice 
+		<choose>
+			<when test="condition != null and condition != ''">
+				WHERE notice_status = #{condition} 
+			</when>
+			<otherwise>
+				WHERE notice_status IN (0, 1) 
+			</otherwise>
+		</choose>
+	</select>
+	
+	<resultMap type="HashMap" id="noticeInfo">
+		<result property="ADMIN_NO" column="ADMIN_NO"/>
+		<result property="ADMIN_NAME" column="ADMIN_NAME"/>
+		<result property="ADMIN_ID" column="ADMIN_ID"/>
+		<result property="NOTICE_NO" column="NOTICE_NO"/>
+		<result property="NOTICE_STATUS" column="NOTICE_STATUS"/>
+		<result property="NOTICE_VIEW" column="NOTICE_VIEW"/>
+		<result property="NOTICE_REGDATE" column="NOTICE_REGDATE"/>
+		<result property="NOTICE_TITLE" column="NOTICE_TITLE"/>
+		<result property="NOTICE_CONTENT" column="NOTICE_CONTENT" jdbcType="CLOB" javaType="java.lang.String"/>
+	</resultMap>
+	<select id="searchNoticeInfo" parameterType="string" resultMap="noticeInfo">
+		SELECT a.admin_id
+			  , a.admin_name
+			  , n.*
+		FROM notice n, admin a
+		WHERE n.admin_no = a.admin_no
+		AND n.notice_no = #{notice_no}
+	</select>
+	
+	<update id="updateNotice" parameterType="map">
+		UPDATE notice
+		SET notice_title = #{notice_title}
+			, notice_content = #{notice_content}
+			, notice_regdate = CURRENT_DATE
+		WHERE notice_no = #{notice_no}
+	</update>
+	
+	<delete id="deleteNotice" parameterType="string">
+		DELETE FROM notice
+		WHERE notice_no = #{notice_no}
+	</delete>
+	
+	<insert id="insertNotice" parameterType="adminNoticeInsertDto">
+		INSERT INTO notice(notice_no, admin_no, notice_status, notice_title, notice_content)
+		VALUES(#{notice_no}, #{admin_no}, #{notice_status}, #{notice_title}, #{notice_content})
+	</insert>
+</mapper>

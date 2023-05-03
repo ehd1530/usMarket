@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mybatis.mapper.member">
+	<!-- 회원 등록 -->
+	<insert id="insertMember" parameterType="memberDto">
+		<selectKey keyProperty="member_no" resultType="Integer" order="BEFORE">
+			SELECT member_seq.nextval FROM dual
+		</selectKey>
+		INSERT INTO member (MEMBER_NO,MEMBER_NAME,MEMBER_ID,
+		MEMBER_PASSWORD,MEMBER_IMAGE,MEMBER_EMAIL,MEMBER_HP,MEMBER_NICKNAME,
+		MEMBER_ZIPCODE,MEMBER_ADDRESS,MEMBER_ADDRESS_DETAIL) 
+		VALUES (#{member_no},#{member_name},#{member_id},#{member_password},#{member_image},
+		#{member_email},#{member_hp},#{member_nickname},
+		#{member_zipcode},#{member_address},#{member_address_detail})
+	</insert>
+
+	<!-- 회원 정보 변경 -->
+	<update id="updateMember" parameterType="memberDto">
+		UPDATE member 
+		SET 
+			member_name = #{member_name},
+			member_image = #{member_image},
+			member_email = #{member_email},
+			member_hp = #{member_hp},
+			member_nickname = #{member_nickname},
+			member_zipcode = #{member_zipcode},
+			member_address = #{member_address},
+			member_address_detail = #{member_address_detail}
+		WHERE member_no = #{member_no}
+	</update>
+
+	<!-- 아이디, 비밀번호 찾기 -->
+	<select id="selectMember" parameterType="map" resultType="map">
+		SELECT member_no,member_id,member_email 
+		FROM member 
+		WHERE 
+		<if test="member_name != null and member_hp != null">
+			member_name = #{member_name} and member_hp = #{member_hp}
+		</if>
+		<if test="member_id != null and member_email != null">
+			member_id = #{member_id} and member_email = #{member_email}
+		</if>
+	</select>
+	
+	<!-- 비밀번호 재설정 -->
+	<update id="updatePw" parameterType="map">
+		UPDATE member 
+		SET member_password = #{member_password}
+		WHERE member_no = #{member_no}
+	</update>
+
+	<!-- 닉네임 중복 검사 -->
+	<select id="overlappedNick" parameterType="String" resultType="String">
+		SELECT member_nickname FROM member WHERE MEMBER_NICKNAME = #{member_nick}
+	</select>
+	
+	<!-- 아이디 중복 검사 -->
+	<select id="overlappedID" parameterType="String" resultType="int">
+		select count(MEMBER_ID) From member where MEMBER_ID=#{member_id}
+	</select>
+	
+	<!-- 이메일 중복 검사 -->
+	<select id="overlappedEmail" parameterType="String" resultType="String">
+		SELECT member_email FROM member WHERE member_email = #{member_email}
+	</select>
+	
+	<!-- 회원 이미지 등록 -->
+	<select id="idLogin" parameterType="String" resultType="map">
+		SELECT MEMBER_NO,MEMBER_ID,MEMBER_PASSWORD FROM MEMBER WHERE MEMBER_ID = #{member_id}
+	</select>
+	
+	<!-- 회원 정보 검색 -->
+	<select id="memberSearch" parameterType="Integer" resultType="memberDto">
+		SELECT * FROM MEMBER WHERE MEMBER_NO = #{member_no}
+	</select>
+	
+	<!-- 마이페이지 상품 출력 -->
+	<select id="searchProfileProduct" parameterType="profileSearchCondition" resultType="map">
+		SELECT * 
+		FROM ( SELECT rownum AS num, A.*
+		       FROM ( SELECT*
+		              FROM product_view
+		              WHERE seller_no = #{member_no}
+		              AND product_state_no != 4 
+		              <choose>
+		                <when test="condition == 1">
+		                    AND product_state_no = 1 
+		                </when>
+		                <when test="condition == 2">
+		                    AND product_state_no = 2  
+		                </when>
+		                <when test="condition == 3">
+		                    AND product_state_no = 3  
+		                </when>
+		              </choose> 
+		              <choose>
+		                <when test="order == 'regdate_desc'">
+		                    ORDER BY product_regdate DESC 
+		                </when>
+		                <when test="order == 'regdate'">
+		                    ORDER BY product_regdate  
+		                </when>
+		                <when test="order == 'view_desc'">
+		                    ORDER BY product_view DESC 
+		                </when>
+		                <when test="order == 'view'">
+		                    ORDER BY product_view 
+		                </when>
+		                <otherwise>
+		                    ORDER BY product_regdate DESC 
+		                </otherwise>
+		              </choose>
+		            ) A
+		     )
+		WHERE num BETWEEN #{startPage} AND #{endPage}
+	</select>
+		
+	<!-- 마이페이지 판매 중인 상품 수 출력 -->
+	<select id="searchProfileProductCnt" parameterType="map" resultType="int">
+		SELECT count(*) 
+		 FROM product_view
+		 WHERE seller_no = #{member_no} AND product_state_no != 4
+		 <choose>
+			<when test="condition == 1">
+				AND product_state_no = 1 
+			</when>
+			<when test="condition == 2">
+				AND product_state_no = 2  
+			</when>
+			<when test="condition == 3">
+				AND product_state_no = 3  
+			</when>
+		</choose>
+	</select>
+	
+	<!-- 마이페이지 찜 출력 -->
+	<select id="searchProfileBookmark" parameterType="profileSearchCondition" resultType="map">
+		SELECT *
+		FROM (SELECT rownum AS num, A.*
+			 FROM (SELECT*
+	              FROM product_view
+	              WHERE product_no IN (SELECT DISTINCT(product_no) FROM bookmark WHERE member_no = #{member_no})
+	              AND product_state_no != 4 
+	              <choose>
+	                <when test="condition == 1">
+	                    AND product_state_no = 1 
+	                </when>
+	                <when test="condition == 2">
+	                    AND product_state_no = 2  
+	                </when>
+	                <when test="condition == 3">
+	                    AND product_state_no = 3  
+	                </when>
+	              </choose> 
+	              <choose>
+	                <when test="order == 'regdate_desc'">
+	                    ORDER BY product_regdate DESC 
+	                </when>
+	                <when test="order == 'regdate'">
+	                    ORDER BY product_regdate  
+	                </when>
+	                <when test="order == 'view_desc'">
+	                    ORDER BY product_view DESC 
+	                </when>
+	                <when test="order == 'view'">
+	                    ORDER BY product_view 
+	                </when>
+	                <otherwise>
+	                    ORDER BY product_regdate DESC 
+	                </otherwise>
+	              </choose>
+	            ) A
+			 )
+		WHERE num BETWEEN #{startPage} AND #{endPage}
+	</select>
+	
+	<!-- 마이페이지 찜 중인 상품 수 출력 -->
+	<select id="searchProfileBookmarkCnt" parameterType="map" resultType="int">
+		SELECT COUNT(product_no) 
+		FROM product 
+		WHERE product_no IN (
+			SELECT DISTINCT(product_no) 
+			FROM bookmark 
+			WHERE member_no = #{member_no})	AND product_state_no != 4
+		<choose>
+			<when test="condition == 1">
+				AND product_state_no = 1 
+			</when>
+			<when test="condition == 2">
+				AND product_state_no = 2  
+			</when>
+			<when test="condition == 3">
+				AND product_state_no = 3  
+			</when>
+		</choose>
+	</select>
+	
+	<!-- 마이페이지 리뷰 출력 -->
+	<select id="searchProfileReview" parameterType="profileSearchCondition" resultType="map">
+		SELECT *
+		FROM(SELECT ROWNUM AS num, A.*
+			 FROM (
+			    SELECT m.MEMBER_IMAGE, m.MEMBER_NICKNAME, r.REVIEW_CONTENT, r.REVIEW_SCORE, r.REVIEW_REGDATE, p.PRODUCT_NAME, p.PRODUCT_NO, m.MEMBER_NO 
+			    FROM deal d 
+			    JOIN review r ON r.deal_no = d.deal_no
+			    JOIN member m ON m.member_no = d.customer_no
+			    JOIN product p ON p.product_no = d.product_no
+			    WHERE d.seller_no = #{member_no}
+			    <choose>
+					<when test="condition == 1">
+					    AND r.review_score = 1 
+					</when>
+					<when test="condition == 2">
+					    AND r.review_score = 2  
+					</when>
+					<when test="condition == 3">
+					    AND r.review_score = 3  
+					</when>
+					<when test="condition == 4">
+					   AND r.review_score = 4  
+					</when>
+					<when test="condition == 5">
+					   AND r.review_score = 5  
+					</when>
+				</choose> 
+				<choose>
+					<when test="order == 'regdate_desc'">
+						ORDER BY r.REVIEW_REGDATE DESC 
+					</when>
+					<when test="order == 'regdate'">
+					    ORDER BY r.REVIEW_REGDATE
+					</when>
+					<otherwise>
+					    ORDER BY r.REVIEW_REGDATE DESC 
+					</otherwise>
+				</choose>
+			 	) A
+		    )
+		WHERE num BETWEEN #{startPage} AND #{endPage}                                                                                                                                                                                                                                                                                                                                                                     
+	</select>
+	
+	<!-- 마이페이지 리뷰 수 출력 -->
+	<select id="searchProfileReviewCnt" parameterType="map" resultType="int">
+		SELECT COUNT(*) 
+        FROM review 
+        WHERE deal_no IN(SELECT deal_no 
+                        FROM deal 
+                        WHERE seller_no = #{member_no})
+        <choose>
+			<when test="condition == 1">
+			    AND review_score = 1 
+			</when>
+			<when test="condition == 2">
+			    AND review_score = 2  
+			</when>
+			<when test="condition == 3">
+			    AND review_score = 3  
+		  </when>
+		</choose>
+	</select>
+	
+	<!-- 내 상품 상태번호 출력 -->
+	<select id="productStateCnt" parameterType="Integer" resultType="map">
+		SELECT ps.PRODUCT_STATE_NAME AS state, COUNT(p.PRODUCT_NO) AS cnt
+		FROM product_state ps
+		LEFT JOIN product p ON p.PRODUCT_STATE_NO = ps.PRODUCT_STATE_NO AND p.SELLER_NO = #{member_no}
+		GROUP BY ps.PRODUCT_STATE_NAME
+	</select>
+</mapper>

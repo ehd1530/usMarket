@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mybatis.mapper.report">
+	<insert id="insertReport" parameterType="reportInsertDto">
+		INSERT INTO report(report_no
+						 , member_no
+						 , report_member_no
+						 , report_category1_no
+						 , report_category2_no
+						 , report_content
+						 , report_image
+						 , report_info)
+			values(#{report_no}
+				 , #{member_no}
+				 , #{report_member_no}
+				 , #{report_category1_no}
+				 , #{report_category2_no}
+				 , #{report_content}
+				 , #{report_image}
+				 , #{report_info})
+	</insert>
+	
+	<select id="selectReportCategory2" parameterType="int" resultType="map">
+		SELECT report_category2_no, report_category2_name FROM report_category2
+		 WHERE report_category1_no = #{report_category1_no}
+		 ORDER BY report_category2_no
+	</select>
+</mapper>

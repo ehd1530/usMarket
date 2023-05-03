@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mybatis.mapper.deal">
+
+	<!-- 거래내역 추가 -->
+	<insert id="insertDeal" parameterType="dealInsertDto">
+		INSERT INTO deal(deal_no, product_no, seller_no, customer_no, customer_name, customer_hp, 
+						customer_zipcode, customer_address, customer_address_detail, deal_delivery_message)
+		 values(#{deal_no}, #{product_no}, #{seller_no}, #{customer_no}, #{customer_name}, #{customer_hp}, 
+		 		#{customer_zipcode}, #{customer_address}, #{customer_address_detail}, #{deal_delivery_message})
+	</insert>
+	
+	<!-- 사용자 주소 업데이트 -->
+	<update id="updateAddress" parameterType="map">
+		UPDATE MEMBER
+		 SET member_zipcode = #{member_zipcode}, member_address = #{member_address}, member_address_detail = #{member_address_detail}
+		 WHERE member_no = #{member_no}
+	</update>
+	
+	<!-- 거래내역 목록 -->
+	<select id="searchDealList" parameterType="map" resultType="map">
+		SELECT *
+		FROM deal_view 
+		<choose>
+			<when test='condition == "sell" or condition.equals("sell")'>
+				 WHERE seller_no = #{member_no} 
+			</when>
+			<when test='condition == "buy" or condition.equals("buy")'>
+				 WHERE customer_no = #{member_no} 
+			</when>
+		</choose>
+		<choose>
+			<when test='state != null and state != ""'>
+				 AND deal_state = #{state} 
+			</when>
+			<otherwise>
+				 AND deal_state IN (0, 1, 2, 3) 
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 거래내역 상세보기 -->
+	<select id="searchDealInfo" parameterType="string" resultType="map">
+		SELECT * 
+		FROM deal_info_view 
+		WHERE deal_no = #{deal_no}
+	</select>
+	
+	<!-- 거래상태 변경 -->
+	<update id="updateDealState" parameterType="map">
+		UPDATE deal 
+		SET deal_state = #{deal_state}
+		<choose>
+			<when test='deal_state == "1" or deal_state.equals("1")'>
+				, deal_delivery_state = 1 
+			</when>
+			<otherwise>
+				, deal_complete_date = CURRENT_DATE 
+			</otherwise>
+		</choose>
+		WHERE deal_no = #{deal_no}
+	</update>
+	
+	<!-- 취소신청 -->
+	<update id="updateDealCancel" parameterType="map">
+		UPDATE deal
+		SET deal_cancel = #{deal_cancel} 
+		<if test='deal_cancel == "1" or deal_cancel.equals("1")'>
+			, deal_state = 3 
+			, deal_complete_date = CURRENT_DATE
+		</if>
+		WHERE deal_no = #{deal_no}
+	</update>
+	
+	<!-- 배송상태 변경 -->
+	<update id="updateDeliveryState" parameterType="map">
+		UPDATE deal
+		SET deal_delivery_state = #{deal_delivery_state} 
+		<if test='deal_receive != null and deal_receive != ""'>
+			, deal_cancel = null 
+			, deal_state = 2
+		</if>
+		WHERE deal_no = #{deal_no}
+	</update>
+	
+	<!-- 리뷰 조회 -->
+	<select id="searchReviewInfo" resultType="map" parameterType="string">
+		SELECT d.customer_no
+			   , m.member_nickname
+			   , m.member_image
+			   , r.*
+		FROM review r, deal d, member m
+		WHERE r.deal_no = d.deal_no
+		AND d.customer_no = m.member_no
+		AND d.deal_no = #{deal_no}
+	</select>
+	
+	<!-- 리뷰 작성 -->
+	<insert id="insertReview" parameterType="map">
+		INSERT INTO review(deal_no, review_content, review_score)
+		values(#{deal_no}, #{review_content}, #{review_score})
+	</insert>
+	
+	<!-- 리뷰 작성 상태 업데이트 -->
+	<update id="updateDealReview" parameterType="string">
+		UPDATE deal
+		SET deal_review = 'Y'
+		WHERE deal_no = #{deal_no}
+	</update>
+	
+	<!-- 채팅 알림 발송 위한 채팅방 번호 조회 -->
+	<select id="searchChatRoom" parameterType="map" resultType="string">
+		SELECT room_no 
+		FROM chat_room
+		WHERE (chat_member_1 = #{chat_member_1} AND chat_member_2 = #{chat_member_2}) 
+		OR (chat_member_2 = #{chat_member_1} AND chat_member_1 = #{chat_member_2})
+	</select>
+</mapper>

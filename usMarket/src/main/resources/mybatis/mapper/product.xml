@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mybatis.mapper.product">
+
+	<sql id="searchKeyword">
+		<choose>
+			<when test='keyword!=null and keyword!=""'>
+				 AND (product_name LIKE '%'||#{keyword}||'%' OR product_tag LIKE '%'||#{keyword}||'%') 
+			</when>
+			<otherwise>
+				 AND product_category1_no = #{category1} 
+				<if test='category2!=null and category2!=""'>
+					 AND product_category2_no = #{category2} 
+				</if>
+			</otherwise>
+		</choose>
+	</sql>
+
+
+	<sql id="searchProductState">
+		<choose>
+			<when test='option=="2"'>
+				 AND product_state_no IN(1, 2) 
+			</when>
+			<when test='option=="3"'>
+				 AND product_state_no IN(1, 3) 
+			</when>
+			<when test='option=="5"'>
+				 AND product_state_no IN(1, 2, 3) 
+			</when>
+			<otherwise>
+				 AND product_state_no = 1 
+			</otherwise>
+		</choose>
+	</sql>
+
+
+	<sql id="searchCategory">
+		AND product_category1_no = #{category1} 
+		<if test='category2!=null and category2!=""'>
+			AND product_category2_no = #{category2} 
+		</if>
+	</sql>
+
+
+	<!-- 메인 상품 전체 출력 -->
+	<select id="searchMainProduct" resultType="productDto">
+		<![CDATA[ 
+		SELECT product_no, product_name, product_price, product_img_path, product_regdate 
+		 FROM product_view 
+		 WHERE product_state_no = 1 AND member_state_no = 1 AND rownum <= 30 
+		]]>
+	</select>
+
+
+	<!-- 상품 대분류 출력 -->
+	<select id="searchProductCategory1" resultType="map">
+		SELECT * FROM product_category1 
+		 ORDER BY product_category1_no
+	</select>
+	
+	
+	<!-- 상품 소분류 출력 -->
+	<select id="searchProductCategory2" parameterType="string" resultType="productCategoryDto">
+		SELECT * FROM category_view 
+		 WHERE product_category1_no = #{product_category1_no} 
+		 ORDER BY product_category2_no 
+	</select>
+	
+	
+	<!-- 상품 소분류 출력2 -->
+	<select id="searchCategory2" parameterType="string" resultType="map">
+		SELECT product_category2_no, product_category2_name  
+		 FROM product_category2 
+		 WHERE product_category1_no = #{product_category1_no} 
+		 ORDER BY product_category2_no
+	</select>
+	
+	
+	<!-- 분류별 상품 출력 -->
+	<select id="searchProductByCategory" parameterType="searchCondition" resultType="productDto">
+		SELECT product_no, product_state_no, product_name, product_price, product_img_path, product_regdate 
+		 FROM ( 
+				SELECT rownum as num, A.*  
+				 FROM ( 
+						SELECT product_no, product_state_no, product_name, product_price, product_img_path, product_regdate  
+						 FROM product_view 
+						 WHERE member_state_no = 1  
+				 		 <include refid="searchProductState" /> 
+				 		 <include refid="searchKeyword" /> 
+				 		 ORDER BY product_regdate DESC, product_no DESC 	
+					 )A
+			 )
+		 WHERE num BETWEEN #{startPage} AND #{endPage}
+	</select>
+	
+	
+	<!-- 판매 중인 상품 수 출력 -->
+	<select id="searchProductCount" parameterType="searchCondition" resultType="int">
+		SELECT count(*) 
+		 FROM product_view 
+		 WHERE member_state_no = 1 
+		<include refid="searchProductState" />
+		<include refid="searchKeyword" />
+	</select>
+    
+	
+	<!-- 상품 상세보기 출력 -->                                                                                                                                                                      
+	<resultMap type="HashMap" id="productInfo">
+		<result property="MEMBER_ID" column="member_id" />
+		<result property="PRODUCT_NO" column="product_no" />
+		<result property="SELLER_NO" column="seller_no" />
+		<result property="PRODUCT_CATEGORY1_NO" column="product_category1_no" />
+		<result property="PRODUCT_CATEGORY2_NO" column="product_category2_no" />
+		<result property="PRODUCT_STATE_NO" column="product_state_no" />
+		<result property="PRODUCT_NAME" column="product_name" />
+		<result property="PRODUCT_CHANGE" column="product_change" />
+		<result property="PRODUCT_PRICE" column="product_price" />
+		<result property="PRODUCT_EXPLANATION" column="product_explanation" jdbcType="CLOB" javaType="java.lang.String"/>
+		<result property="PRODUCT_TAG" column="product_tag" />
+		<result property="PRODUCT_VIEW" column="product_view" />
+		<result property="PRODUCT_REGDATE" column="product_regdate"/>
+		<result property="PRODUCT_PAY_KIND" column="product_pay_kind" />
+		<result property="PRODUCT_USED" column="product_used" />
+		<result property="PRODUCT_CATEGORY1_NAME" column="product_category1_name" />
+		<result property="PRODUCT_CATEGORY2_NAME" column="product_category2_name" />
+		<result property="BOOKMARK_COUNT" column="bookmark_count" />
+	</resultMap>
+	<select id="searchProductInfo" parameterType="string" resultMap="productInfo">
+		SELECT m.member_id, p.*, c.product_category1_name, c.product_category2_name 
+			 , (SELECT count(b.member_no) FROM bookmark b WHERE p.product_no = b.product_no) AS "bookmark_count" 
+		 FROM product p, member m, category_view c 
+		 WHERE p.seller_no = m.member_no 
+		 	 AND p.product_state_no != 4 
+			 AND p.product_no = #{product_no}  
+			 AND (c.product_category1_no = p.product_category1_no AND c.product_category2_no = p.product_category2_no)
+	</select>
+	
+	
+	<!-- 상품 조회수 증가 -->
+	<update id="updateProductView" parameterType="string">
+		UPDATE product 
+		 SET product_view = product_view+1 
+		 WHERE product_no = #{product_no} 
+	</update>
+	
+	
+	<!-- 판매자 정보 출력 -->
+	<select id="searchSellerInfo" parameterType="int" resultType="map">
+		SELECT member_no, member_nickname, member_image 
+			, (SELECT count(*) FROM product WHERE seller_no = m.member_no AND product_state_no = 1) AS "PRODUCT_COUNT" 
+			, (SELECT count(*) FROM deal WHERE seller_no = m.member_no AND deal_review = 'Y') AS "REVIEW_COUNT" 
+		 FROM member m 
+		 WHERE m.member_no = #{SELLER_NO}
+	</select>
+	
+	
+	<!-- 상위 2건 리뷰 출력 -->
+	<select id="searchReviewByInfo" parameterType="int" resultType="map">
+		<![CDATA[
+		SELECT a.customer_no, a.review_regdate, a.review_content, a.review_score, a.deal_complete_date, m.member_nickname, m.member_image 
+		 FROM member m, ( 
+						 SELECT * 
+						  FROM ( 
+									SELECT rownum, d.customer_no, r.review_content, r.review_score, r.review_regdate, d.deal_complete_date 
+									 FROM review r, deal d 
+									 WHERE r.deal_no = d.deal_no 
+									 AND d.seller_no = #{seller_no} 
+									 ORDER BY r.review_regdate DESC 
+								) 
+							 WHERE rownum <= 2 
+							 ) a 
+		 WHERE m.member_no = a.customer_no		
+		]]>
+	</select>
+	
+	
+	<!-- 북마크 추가된 상품인지 검색 -->
+	<select id="searchBookmarkByInfo" parameterType="string" resultType="int">
+		SELECT count(*) 
+		 FROM bookmark  
+		 WHERE bookmark_no = #{bookmark_no} 
+	</select>
+	
+	
+	<!-- 북마크 삭제 -->
+	<delete id="deleteBookmark" parameterType="string">
+		DELETE FROM bookmark 
+		 WHERE bookmark_no = #{bookmark_no}
+	</delete>
+	
+	
+	<!-- 북마크 추가 -->
+	<insert id="insertBookmark" parameterType="map">
+		INSERT INTO bookmark (bookmark_no, member_no, product_no) 
+		 values (#{bookmark_no}, #{member_no}, #{product_no}) 
+	</insert>
+	
+	
+	<!-- 회원번호 출력 -->
+	<select id="searchMemberNo" parameterType="string" resultType="int">
+		SELECT member_no FROM member WHERE member_id = #{member_id}
+	</select>
+
+	
+	<!-- 상품 등록 -->
+	<insert id="insertProduct" parameterType="productInsertDto">
+		INSERT INTO product(product_no, seller_no, product_category1_no, product_category2_no, product_name, product_used, product_change, product_price, product_explanation, product_tag) 
+		 values(#{product_no}, #{seller_no}, #{product_category1_no}, #{product_category2_no}, #{product_name}, #{product_used}, #{product_change}, #{product_price}, #{product_explanation}, #{product_tag}) 
+	</insert>
+	
+
+	<!-- 상품 이미지 등록 -->
+	<insert id="insertProductFile" parameterType="productFileDto">
+		INSERT INTO product_img 
+		 values(#{product_no}, #{product_img_path}, #{product_img_filename}, #{product_img_uuid}, #{product_img_order}) 
+	</insert>
+
+	
+	<!-- 상품 이미지 출력 -->
+	<select id="searchProductImage" parameterType="string" resultType="string">
+		SELECT product_img_path FROM product_img
+	 	 WHERE product_no = #{product_no}
+	 	 ORDER BY product_img_order
+	</select>
+	
+	<!-- 상품 상태 변경 -->
+	<update id="updateProductState" parameterType="map">
+		UPDATE product
+ 		 SET product_state_no = #{product_state_no} 
+		 WHERE seller_no = #{seller_no} AND product_no = #{product_no}
+	</update>
+	
+	<!-- 상품 이미지 삭제 -->
+	<delete id="deleteProductImage" parameterType="string">
+		DELETE FROM product_img
+		 WHERE product_no = #{product_no}
+	</delete>
+	
+	<!-- 상품 구매시 상품 정보 출력 -->
+	<select id="searchProductOrderInfo" parameterType="string" resultType="map">
+		SELECT * FROM product_order_view
+		 WHERE product_no = #{product_no}
+	</select>
+	
+	<!-- 구매회원 정보 출력 -->
+	<select id="searchCustomerInfo" parameterType="string" resultType="map">
+		SELECT member_name, member_hp, member_email, member_zipcode, member_address, member_address_detail FROM MEMBER
+		 WHERE member_no = #{member_no}
+	</select>
+	
+</mapper>

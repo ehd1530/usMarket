@@ -1,0 +1,566 @@
+@charset "UTF-8";
+
+#info__category1{
+	color: #1c1c1c;
+	font-weight: 500;
+}
+
+#info__category2{
+	color: #1c1c1c;
+	font-weight: 500;
+}
+
+.product__info{
+	width: 100%;
+	margin-top: 50px;
+	display: flex;
+	padding-bottom: 50px;
+	justify-content: space-between;
+}
+
+
+.product__info__img{
+	width: 47%;
+	border: 1px solid #eeeeee; /* 임시 */
+}
+
+
+.product__info__img img{
+	width: 522px;
+	height: 492px;
+	object-fit: cover;
+}
+
+
+.product__info__div{
+	width: 47%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+
+.product_name{
+	font-size: 25px;
+	font-weight: 700;
+}
+
+
+.product_price{
+	font-size: 40px;
+	font-weight: 700;
+	border-bottom: 1px solid #eeeeee;
+	padding-bottom: 10px;
+}
+
+
+.product_price::after{
+	content: "원";
+	font-size: 25px;
+	font-weight: 500;
+	margin-left: 5px;
+}
+
+
+.product__detail__1{ 
+	color: #cccccc;
+	display: flex;
+	height: 80px;
+	padding-bottom: 50px;
+	justify-content: space-between;
+}
+
+.product__detail__1 > div{
+	width: 50%;
+	display: flex;
+	align-items: center;
+}
+
+.product__detail__1 span{
+	margin-top: 3px;
+}
+
+
+.product__detail__icon{
+	width: 16px;
+	margin-right: 6px;
+}
+
+
+.product__detail__icon img{
+	object-fit: cover;
+}
+
+
+.product__wish{
+	display: flex;
+	align-items: center;
+	font-size: 16px;
+}
+
+
+.product__wish::after{	
+	content: "";
+	width: 1px;
+	height: 10px;
+	border-right: 1px solid #eeeeee;
+	margin-right: 10px;
+	margin-left: 10px;
+}
+
+
+.product__view{
+	display: flex;
+	align-items: center;
+	font-size: 16px;
+}
+
+
+.product__view::after{
+	content: "";
+	width: 1px;
+	height: 10px;
+	border-right: 1px solid #eeeeee;
+	margin-right: 10px;
+	margin-left: 10px;
+}
+
+
+.product__uploaded{
+	display: flex;
+	align-items: center;
+	font-size: 16px;
+}
+
+.product__detail__1 > .right{
+	justify-content: flex-end;
+	visibility: visible;
+}
+
+#product__report{
+	cursor: pointer;
+	color: #FE5A5A;
+	font-weight: 600;
+}
+
+.product__detail__2{
+	font-size: 14px;
+	display: flex;
+	flex-flow: column;
+	height: 250px;
+	justify-content: space-evenly;
+}
+
+
+.product__label::before{
+	content: "·";
+	font-weight: 1000;
+	margin-right: 5px;
+}
+
+
+.product__label{
+	color: #999999;
+	width: 100px;
+}
+
+
+.product__status, .product__exchange, .product__charge, .product__location{
+	display: flex;
+}
+
+
+.product__buttons{
+	display: flex;
+	justify-content: space-between;
+}
+
+.product__buttons form{
+	width: 0px;
+	height: 0px;
+}
+
+.product__my__buttons{
+	display: flex;
+	justify-content: space-between;
+}
+
+.product__my__buttons > form{
+	width: 0px;
+	height: 0px;
+}
+
+.product__my__buttons > div{
+	height: 56px;
+	cursor: pointer;
+	border-radius: .375rem;
+	box-shadow: 0 2px 6px 0 rgba(67,89,113,.12);
+}
+
+.product__my__buttons span{
+	font-size: 19px;
+	font-weight: 600;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+	padding-right: 10px;
+	padding-left: 10px;
+}
+
+.btn__my__store{
+	width: 50%;
+	background-color: #ffffff;
+}
+
+.btn__my__store span{
+	color: #666666;	
+}
+
+.btn__product__delete{
+	width: 23%;
+	background-color: #fe5a5a;
+}
+
+.btn__product__modify{
+	width: 23%;
+	color: #666666;
+  	position: relative;
+  	display: inline-block;
+}
+
+.btn__product__delete span{
+	color: #ffffff;
+}
+
+.product__not__sale span{
+	width: 100%;
+	height: 56px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 19px;
+	font-weight: 600;
+	color: #1c1c1c;	
+}
+
+
+.product__buttons div{
+	width: 150px;
+	height: 56px;
+	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	border-radius: .375rem;
+	box-shadow: 0 2px 6px 0 rgba(67,89,113,.12);
+	align-items: center;
+}
+
+
+.product__buttons img{
+	width: 20px;
+	object-fit: cover;
+	margin-bottom: 2px;
+}
+
+
+.product__buttons span{
+	font-size: 19px;
+	font-weight: 600;
+}
+
+
+#btn__wish{
+	background-color: #666666;
+}
+#btn__wish span{
+	color: #ffffff;
+	margin-left: 10px;
+}
+
+
+#btn__chat{
+	background-color: #ffffff;
+}
+#btn__chat span{
+	color: #666666;
+}
+
+
+#btn__buy{
+	background-color: #16A7F1;
+}
+#btn__buy{
+	color: #ffffff;
+}
+
+
+.product__content__layout{
+	width: 100%;
+	margin-top: 50px;
+	display: flex;
+	border-top: 1px solid #eeeeee; 
+}
+
+
+.product__content__1{
+	width: 70%;
+	border-right: 1px solid #eeeeee;
+	padding: 50px 30px 0px 0px;
+}
+
+
+.product__content__2{
+	width: 30%;
+	padding: 50px 30px 0px 30px;
+}
+
+
+.product__content__title{
+	font-size: 20px;
+	border-bottom: 1px solid #eeeeee;
+	padding-bottom: 15px;
+}
+
+
+.product__content{
+	font-size: 15px;
+	margin: 50px 0 50px 0;
+}
+
+
+.product__tag{
+	padding-top: 100px;
+	display: flex;
+	align-items: center;
+}
+
+
+.product__tag__icon::after{
+	content: "상품태그";
+	margin-right: 20px;
+	font-size: 13px;
+	color: #666666;
+}
+
+
+.product__tag__icon img{
+	width: 13px;
+	object-fit: cover;
+}
+
+
+.product__tag__content a{
+	font-size: 13px;
+	padding: 3px 5px 2px 5px;
+	color: #1c1c1c;
+	background-color: #eeeeee;
+	margin-right: 10px;
+	cursor: pointer;
+}
+
+
+.product__seller{
+	display: flex;
+	padding: 20px 15px 20px 15px;
+	margin-bottom: 20px;
+	border-bottom: 1px solid #eeeeee;
+	justify-content: space-between;
+}
+
+
+.product__tag__content > a::before{
+	content: "#";
+	margin-right: 5px;
+	color: #828282;
+}
+
+
+.product__seller__profile{
+	display: flex;
+	width: 25%;
+	height: 60px;
+	justify-content: center;
+	align-items: center;
+	margin-right: 20px;
+}
+
+
+.product__seller__profile img{
+	object-fit: cover;
+}
+
+
+.product__seller__info{
+	display: flex;
+	width: 70%;
+	padding: 5px 0px 5px 0px;
+	flex-flow: column;
+	justify-content: space-around;
+}
+
+
+.product__seller__info__1 a{
+	color: #1c1c1c;	
+}
+
+
+.product__seller__info__2{
+	font-size: 13px;
+	color: #666666
+}
+
+
+.product__seller__info__2 span::before{
+	content: "판매상품";
+	margin-right: 5px;
+}
+
+
+#fetch__review__count{
+	color: #16A7F1;
+	font-size: 18px;
+}
+
+
+.product__review > div{
+	display: flex;
+	padding: 20px 15px 20px 15px;
+	border-bottom: 1px solid #eeeeee;
+}
+
+
+.product__review__1{
+	width: 20%;
+}
+
+
+.product__review div .product__review__1 img{
+	object-fit: cover;
+}
+
+.product__review__2{
+	padding-left: 20px;
+	padding: 0px 20px 0px 20px;
+	width: 80%;
+}
+
+
+.product__review__2 .review__info__1{
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	font-size: 15px;
+	color: #666666;
+}
+
+
+.product__review__2 .review__info__1 #review__nickname{
+	font-weight: 500;
+	color: #666666;
+}
+
+
+.product__review div .review__info__2 #review__score{
+	margin-bottom: 10px;
+}
+
+
+.product__review div .review__info__2 #review__score img{
+	margin-right: 2px;
+	height: 15px;
+}
+
+
+.product__review__2 .review__info__2 #review__content{
+	font-size: 15px;
+	color: #666666;
+}
+
+
+.product__review__empty{
+	width: 100%;
+	height: 100px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #999999;
+	display: none;
+}
+
+
+.product__review__more{
+	width: 100%;
+	height: 60px;
+	justify-content: center;
+	align-items: center;
+	display: none;
+}
+
+
+.product__review__more a{
+	color: #212529;
+}
+
+.product__img__button{
+	position: absolute;
+	display: flex;
+	width: 481px;
+	height: 492px;
+	padding-left: 10px;
+	padding-right: 10px;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.product__img__button img{
+	width: 60px;
+	height: 60px;
+	object-fit: cover;
+	opacity: 60%;
+	cursor: pointer;
+}
+
+.dropdown-content {
+	display: none;
+	position: absolute;
+	background-color: #FFFFFF;
+	width: 100%;
+	border-bottom-left-radius: .375rem;
+	border-bottom-right-radius: .375rem;
+	box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+	z-index: 1;
+}
+
+.dropdown-content ul{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	height: 100%;
+	justify-content: space-evenly;
+	font-size: 17px;
+	font-weight: 600;
+}
+
+.dropdown-content ul > li{
+	width: 100%;
+	height: 50px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+
+.dropdown-content ul > li:hover{
+	font-weight: 700;
+}
+
+.status-selected{
+	background-color: #F5F9FF;
+	color: #7988FD;
+	cursor: default;
+}
+
+.btn__product__modify:hover .dropdown-content{
+	display: block;
+}
